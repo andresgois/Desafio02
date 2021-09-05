@@ -10,12 +10,24 @@ app.use(cors());
 const users = [];
 
 function checksExistsUserAccount(request, response, next) {
-  // Complete aqui
+  const { username } = request.headers;
+
+  const user = users.find( (user) => user.username === username);
+
+  if(!user){
+    response.status(400).json({ error: "User not found"});
+  }
+
+  request.user = user;
+
+  next();
 }
 
 function checksCreateTodosUserAvailability(request, response, next) {
-  // Complete aqui
+  
+  next();
 }
+
 
 function checksTodoExists(request, response, next) {
   // Complete aqui
