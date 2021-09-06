@@ -21,14 +21,9 @@ function checksExistsUserAccount(request, response, next) {
 }
 
 function checksCreateTodosUserAvailability(request, response, next) {
-  const { username, name } = request.headers;
-  if(username === undefined){
-    username  = name;
-  }
+  const { user } = request;
 
-  const user = users.find( (user) => user.username === username);
-
-  if(!(user.pro === true || user.pro === false && user.todos.length < 10)){
+  if(user.pro === false && user.todos.length >= 10){
     return response.status(403).json({ error: "limit exhausted"});
   }
 
