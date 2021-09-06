@@ -11,30 +11,65 @@ const users = [];
 
 function checksExistsUserAccount(request, response, next) {
   const { username } = request.headers;
-
   const user = users.find( (user) => user.username === username);
-
+  
   if(!user){
-    response.status(400).json({ error: "User not found"});
+    return response.status(404).json({ error: "User not found"});
   }
-
   request.user = user;
-
   next();
 }
 
 function checksCreateTodosUserAvailability(request, response, next) {
-  
+  const { username, name } = request.headers;
+  if(username === undefined){
+    username  = name;
+  }
+
+  const user = users.find( (user) => user.username === username);
+
+  if(!(user.pro === true || user.pro === false && user.todos.length < 10)){
+    return response.status(403).json({ error: "limit exhausted"});
+  }
+
   next();
 }
 
 
 function checksTodoExists(request, response, next) {
-  // Complete aqui
+  const { username } = request.headers;
+  const { id } = request.params;
+
+  if(!(validate(id))){
+    return response.status(400).json({ error: "this is not a validated id"});
+  }
+
+  const user = users.find( (user) => user.username === username);
+  
+  if(!user){
+    return response.status(404).json({ error: "User not found"});
+  }
+  
+  const todo = user.todos.find(u => u.id === id);
+  
+  if(!todo){
+    return response.status(404).json({ error: "id does not belong to this user"});
+  }
+  request.user = user;
+  request.todo = todo;
+  next();
 }
 
 function findUserById(request, response, next) {
-  // Complete aqui
+  const { id } = request.params;
+  const user = users.find( (user) => user.id === id);
+  
+  if(!user){
+    return response.status(404).json({ error: "User not found"});
+  }
+
+  request.user = user;
+  next();
 }
 
 app.post('/users', (request, response) => {
@@ -57,6 +92,10 @@ app.post('/users', (request, response) => {
   users.push(user);
 
   return response.status(201).json(user);
+});
+
+app.get('/users', (request, response) => {
+  return response.status(201).json(users);
 });
 
 app.get('/users/:id', findUserById, (request, response) => {
